@@ -158,11 +158,59 @@
 - Modify document scores using custom functions (e.g., boost recent documents).
 - Useful for advanced ranking and personalization.
 
+```json
+{
+  "query": {
+    "function_score": {
+      "query": { "match": { "title": "elasticsearch" } },
+      "boost": 5,
+      "functions": [
+        {
+          "filter": { "term": { "is_recent": true } },
+          "weight": 2
+        },
+        {
+          "gauss": {
+            "created_at": {
+              "origin": "now",
+              "scale": "10d",
+              "offset": "5d",
+              "decay": 0.5
+            }
+          }
+        }
+      ],
+      "score_mode": "sum",
+      "boost_mode": "multiply"
+    }
+  }
+}
+```
+
 ---
 
 ### 10. Nested Query
 - Query nested objects or arrays of objects inside documents.
 - Required for fields mapped as `nested` type.
+
+```json
+{
+  "query": {
+    "nested": {
+      "path": "comments",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "comments.author": "john" } },
+            { "range": { "comments.likes": { "gte": 10 } } }
+          ]
+        }
+      },
+      "score_mode": "avg"
+    }
+  }
+}
+```
 
 ---
 
